@@ -7,43 +7,65 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class Navbar extends JPanel implements ActionListener {
-    //variable instances
-    private JButton button;
-    private JLabel label;
-    private JPanel panel;
-    public Navbar() {
+    private CardLayout cardLayout;
+    private JPanel cards;
+    private JButton addReceipt;
+    private JButton viewAll;
+    private JButton report;
+    private JButton dashboard;
+    private JFrame parentFrame;
+
+    public Navbar(JFrame parentFrame, CardLayout cardLayout, JPanel cards) {
+        this.cardLayout = cardLayout;
+        this.cards = cards;
+        this.parentFrame = parentFrame;
+
         setOpaque(true);
         Colors color = new Colors();
-        // making the navbar to the left
-        this.setPreferredSize(new Dimension(150, getHeight())); //100 px of width
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS)); // layout in vertical
+
+        this.setPreferredSize(new Dimension(150, getHeight()));
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         this.setBackground(color.Orange());
-        button = new JButton("Dashboard");
-        ImageIcon originalIcon = new ImageIcon("/home/alessandro/IdeaProjects/Contabilita/src/image/dashboard.png");
-        Image originalImage = originalIcon.getImage();
-        Image scaledImage = originalImage.getScaledInstance(30, 30, Image.SCALE_SMOOTH);
-        ImageIcon scaledIcon = new ImageIcon(scaledImage);
-        label = new JLabel(scaledIcon);
-        //Center the component in box Layout
-        label.setAlignmentX(Component.CENTER_ALIGNMENT);
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(Box.createRigidArea(new Dimension(0, 10)));
-        add(label);
-        add(Box.createRigidArea(new Dimension(0, 5)));
-        add(button);
-        button.addActionListener(this);
-    }
-    public void newWindow(){
-        Component[] componentList = this.getComponents();
-        for (Component c : componentList){
-            this.remove(c);
-        }
-        this.revalidate();
-        this.repaint();
+
+        // Initialize buttons
+        this.dashboard = new JButton("Dashboard");
+        this.addReceipt = new JButton("Add Receipt");
+        this.viewAll = new JButton("View All Receipts");
+        this.report = new JButton("Reports");
+
+        // Center alignment for all buttons
+        dashboard.setAlignmentX(Component.CENTER_ALIGNMENT);
+        addReceipt.setAlignmentX(Component.CENTER_ALIGNMENT);
+        viewAll.setAlignmentX(Component.CENTER_ALIGNMENT);
+        report.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        // Add spacing and buttons
+        add(Box.createRigidArea(new Dimension(0, 150)));
+        add(dashboard);
+        add(Box.createRigidArea(new Dimension(0, 150)));
+        add(addReceipt);
+        add(Box.createRigidArea(new Dimension(0, 150)));
+        add(viewAll);
+        add(Box.createRigidArea(new Dimension(0, 150)));
+        add(report);
+
+        // Add action listeners to all buttons
+        dashboard.addActionListener(this);
+        addReceipt.addActionListener(this);
+        viewAll.addActionListener(this);
+        report.addActionListener(this);
     }
 
     @Override
-    public void actionPerformed(ActionEvent actionEvent) {
-
+    public void actionPerformed(ActionEvent e) {
+        if (e.getSource() == dashboard) {
+            cardLayout.show(cards, "DASHBOARD");
+        } else if (e.getSource() == addReceipt) {
+            cardLayout.show(cards, "RECEIPTS");
+        } else if (e.getSource() == viewAll) {
+            cardLayout.show(cards, "VIEW_ALL");
+        } else if (e.getSource() == report) {
+            cardLayout.show(cards, "REPORTS");
+        }
     }
 }
