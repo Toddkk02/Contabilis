@@ -1,5 +1,8 @@
 package Panels;
 
+import models.Receipt;
+import settings.JsonManager;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -76,16 +79,36 @@ public class AddReceiptPanel extends JPanel implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
-        if (actionEvent.getSource() == save){
-            saveCategory();
-            saveAmount();
-            saveDescription();
-            System.out.println(saveCategory());
-            System.out.println(saveAmount());
-            System.out.println(saveDescription());
+        if (actionEvent.getSource() == save) {
+            try {
+                String cat = saveCategory();
+                double amt = saveAmount();
+                String desc = saveDescription();
 
+                // Crea un oggetto Receipt
+                Receipt receipt = new Receipt(cat, amt, desc);
+
+                // Salva nel JSON
+                JsonManager jsonManager = new JsonManager();
+                jsonManager.addReceipt(receipt);
+
+                // Pulisci i campi
+                category.setText("");
+                amount.setText("");
+                description.setText("");
+
+                JOptionPane.showMessageDialog(this,
+                        "Ricevuta salvata con successo!",
+                        "Successo",
+                        JOptionPane.INFORMATION_MESSAGE);
+
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this,
+                        "Inserisci un importo valido!",
+                        "Errore",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         }
-
     }
 
 
