@@ -2,6 +2,7 @@ package GUI;
 
 import Panels.AddReceiptPanel;
 import models.Receipt;
+import networking.DeleteReceipt;
 import networking.PopulateDashboard;
 import settings.Colors;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -22,7 +23,9 @@ public class HomePage extends JFrame implements MouseListener {
     private JPanel pages;
     private JPanel dashboard;
     private int indexReceipt;
-
+    private JLabel trashbinIcon;
+    private JPanel topinfo;
+    private boolean isDeleting = false;
     public HomePage() {
         super("contabilis");
 
@@ -87,13 +90,18 @@ public class HomePage extends JFrame implements MouseListener {
 
         setLocationRelativeTo(null);
         this.setVisible(true);
+        DrawTrashBin();
+        //set default page
+        UpdateDashboard();
+        cardLayout.show(pages, "DASHBOARD");
     }
 
     public void UpdateDashboard() {
         try {
             ObjectMapper mapper = new ObjectMapper();
             List<Receipt> receipts = mapper.readValue(Paths.get("/home/alessandro/IdeaProjects/Contabilita/receipts.json").toFile(),
-                    new TypeReference<List<Receipt>>() {});
+                    new TypeReference<List<Receipt>>() {
+                    });
 
             this.dashboard.removeAll();
             this.indexReceipt = 0;
@@ -102,13 +110,19 @@ public class HomePage extends JFrame implements MouseListener {
                 if (receipt.getCategory() != null && receipt.getAmount() != 0 && receipt.getDescription() != null) {
                     JPanel rect = new JPanel();
                     rect.setLayout(new BoxLayout(rect, BoxLayout.Y_AXIS));
-                    rect.setPreferredSize(new Dimension(200, 150));
+                    rect.setPreferredSize(new Dimension(200, 275));
                     rect.setBackground(new Color(240, 240, 240));
                     rect.setBorder(BorderFactory.createLineBorder(Color.black, 1));
                     rect.addMouseListener(this);
 
+                    // Pannello verde con info della ricevuta
                     JPanel topinfo = new JPanel();
+                    topinfo.setLayout(new FlowLayout());  // o GridLayout(2,1) per mettere le label una sotto l'altra
                     topinfo.setBackground(new Color(50, 136, 59));
+                    topinfo.setMinimumSize(new Dimension(200, 50));
+                    topinfo.setMaximumSize(new Dimension(200, 50));
+                    topinfo.setPreferredSize(new Dimension(200, 50));
+
                     topinfo.add(new JLabel(String.format("Category: %s", receipt.getCategory())));
                     topinfo.add(new JLabel(String.format("Amount: %.2f", receipt.getAmount())));
 
@@ -129,6 +143,7 @@ public class HomePage extends JFrame implements MouseListener {
                 }
             }
 
+
             this.dashboard.revalidate();
             this.dashboard.repaint();
 
@@ -142,30 +157,105 @@ public class HomePage extends JFrame implements MouseListener {
     }
 
     @Override
-    public void mouseClicked(MouseEvent mouseEvent) {
-        System.out.println("clicked");
-    }
+    public void mouseClicked(MouseEvent e) {
+        if(e.getSource() == trashbinIcon) {
+            isDeleting = !isDeleting;
+            // Trova tutti i panel nel dashboard e colora i loro topinfo
+            for(Component comp : dashboard.getComponents()) {
+                if(comp instanceof JPanel) {
+                    JPanel receiptPanel = (JPanel)comp;
+                    for(Component c : receiptPanel.getComponents()) {
+                        if(c instanceof JPanel) {
+                            JPanel topinfo = (JPanel)c;
+                            topinfo.setBackground(isDeleting ? Color.RED : new Color(50, 136, 59));
+                        }
+                    }
+                }
+            }
+            dashboard.revalidate();
+            dashboard.repaint();
+        } else if(isDeleting && e.getSource() instanceof JPanel) {
+            JPanel panel = (JPanel) e.getSource();
+            int index = (int) panel.getClientProperty("index");
 
+            int choice = JOptionPane.showConfirmDialog(
+                    this,
+                    "Are you sure to delete this?",
+                    "Confirm Deletion",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+
+            if(choice == JOptionPane.YES_OPTION) {
+                DeleteReceipt.deleteReceiptAtIndex(index);
+                UpdateDashboard();
+            }
+
+            isDeleting = false;
+            for(Component comp : dashboard.getComponents()) {
+                if(comp instanceof JPanel) {
+                    JPanel receiptPanel = (JPanel)comp;
+                    for(Component c : receiptPanel.getComponents()) {
+                        if(c instanceof JPanel) {
+                            JPanel topinfo = (JPanel)c;
+                            topinfo.setBackground(new Color(50, 136, 59));
+                        }
+                    }
+                }
+            }
+            dashboard.revalidate();
+            dashboard.repaint();
+        }
+    }
     @Override
     public void mousePressed(MouseEvent e) {
+        //pass
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
+        //pass
     }
 
     @Override
     public void mouseEntered(MouseEvent e) {
-        JPanel panel = (JPanel) e.getSource();
-        int index = (int) panel.getClientProperty("index");
-        System.out.println("Mouse entered panel " + index);
-        panel.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+        if (e.getSource() instanceof JPanel) {
+            JPanel panel = (JPanel) e.getSource();
+            if (panel.getClientProperty("index") != null) {
+                int index = (int) panel.getClientProperty("index");
+                System.out.println("Mouse entered panel " + index);
+                panel.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+            }
+        }
     }
 
     @Override
     public void mouseExited(MouseEvent e) {
-        JPanel panel = (JPanel) e.getSource();
-        int index = (int) panel.getClientProperty("index");
-        panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+        if (e.getSource() instanceof JPanel) {
+            JPanel panel = (JPanel) e.getSource();
+            if (panel.getClientProperty("index") != null) {
+                panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+            }
+        }
+    }
+
+    public void DrawTrashBin() {
+        ImageIcon imageIcon = new ImageIcon("src/image/trashbin.png");
+        Image image = imageIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+        this.trashbinIcon = new JLabel(new ImageIcon(image));  // usa this.trashbinIcon invece di creare una nuova variabile locale
+
+        JLabel textForNameAndVersion = new JLabel("Contabilis 2025 Beta Version");
+        textForNameAndVersion.setForeground(Color.orange);
+
+        JPanel trashPanel = new JPanel(new BorderLayout());
+        trashPanel.setBackground(Color.darkGray);
+
+        trashPanel.add(textForNameAndVersion, BorderLayout.WEST);
+        trashPanel.add(this.trashbinIcon, BorderLayout.EAST);
+
+        this.add(trashPanel, BorderLayout.SOUTH);
+        this.revalidate();
+        this.repaint();
+        this.trashbinIcon.addMouseListener(this);
     }
 }
