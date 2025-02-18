@@ -85,27 +85,27 @@ public class AddReceiptPanel extends JPanel implements ActionListener {
                 double amt = saveAmount();
                 String desc = saveDescription();
 
-                // Crea un oggetto Receipt
+               //create an object Receipt
                 Receipt receipt = new Receipt(cat, amt, desc);
 
-                // Salva nel JSON
+                // save in JSON
                 JsonManager jsonManager = new JsonManager();
                 jsonManager.addReceipt(receipt);
 
-                // Pulisci i campi
+                // clear the scope
                 category.setText("");
                 amount.setText("");
                 description.setText("");
 
                 JOptionPane.showMessageDialog(this,
-                        "Ricevuta salvata con successo!",
-                        "Successo",
+                        "Receipt insert successfully!",
+                        "Success",
                         JOptionPane.INFORMATION_MESSAGE);
 
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this,
-                        "Inserisci un importo valido!",
-                        "Errore",
+                        "Insert a valid Amount!",
+                        "Error",
                         JOptionPane.ERROR_MESSAGE);
             }
         }

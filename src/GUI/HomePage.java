@@ -1,20 +1,32 @@
 package GUI;
 
 import Panels.AddReceiptPanel;
+import models.Receipt;
+import networking.PopulateDashboard;
 import settings.Colors;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.swing.*;
 import java.awt.*;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
+/**
+ * Main window of the application that contains all the panels
+ */
 public class HomePage extends JFrame {
     private CardLayout cardLayout;
     private JPanel pages;
+
 
     public HomePage() {
         super("contabilis");
 
         // initialize cardlayout
         cardLayout = new CardLayout();
+
 
         // create the main panel for Card layout
         pages = new JPanel(cardLayout);
@@ -24,10 +36,55 @@ public class HomePage extends JFrame {
         addReceipt.setBackground(new Color(240, 240, 240));
         addReceipt.add(new JLabel("Add Receipts Panel"));
 
-        // panel for dashboard
+        // panel for dashboard with FlowLayout
         JPanel dashboard = new JPanel();
+        dashboard.setLayout(new FlowLayout(FlowLayout.LEFT, 25, 25));  // padding 25px
         dashboard.setBackground(new Color(240, 240, 240));
-        dashboard.add(new JLabel("Dashboard Panel"));
+        // Get receipts data
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Receipt> receipts = mapper.readValue(Paths.get("/home/alessandro/IdeaProjects/Contabilita/receipts.json").toFile(),
+                    new TypeReference<List<Receipt>>() {});
+            // a counter for receipt
+            int numbOfReceipt = 0;
+            // Create a rectangle for each valid receipt
+            for (Receipt receipt : receipts) {
+                if (receipt.getCategory() != null && receipt.getAmount() != 0 && receipt.getDescription() != null) {
+                    // Create and setup rectangle
+                    JPanel rect = new JPanel();
+                    rect.setLayout(new BoxLayout(rect, BoxLayout.Y_AXIS));  // Importante: usa BoxLayout
+                    rect.setPreferredSize(new Dimension(200, 150));
+                    rect.setBackground(new Color(240, 240, 240));
+                    rect.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+
+                    // Top info panel
+                    JPanel topinfo = new JPanel();
+                    topinfo.setBackground(new Color(50, 136, 59));
+                    topinfo.add(new JLabel(String.format("Category: %s", receipt.getCategory())));
+                    topinfo.add(new JLabel(String.format("Amount: %.2f", receipt.getAmount())));
+
+                    // Description area with scroll
+                    JTextArea descArea = new JTextArea(receipt.getDescription());
+                    descArea.setLineWrap(true);
+                    descArea.setWrapStyleWord(true);
+                    descArea.setEditable(false);
+
+                    JScrollPane scrollPane = new JScrollPane(descArea);
+                    scrollPane.setPreferredSize(new Dimension(180, 80));
+
+                    rect.add(topinfo);
+                    rect.add(scrollPane);
+
+                    // Add rectangle to dashboard
+                    dashboard.add(rect);
+                    numbOfReceipt++;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JLabel errorLabel = new JLabel("Error loading receipts");
+            dashboard.add(errorLabel);
+        }
 
         // panel for view all receipts
         JPanel viewAllReceipts = new JPanel();
