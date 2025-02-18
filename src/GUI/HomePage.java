@@ -9,81 +9,66 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Main window of the application that contains all the panels
- */
-public class HomePage extends JFrame {
+public class HomePage extends JFrame implements MouseListener {
     private CardLayout cardLayout;
     private JPanel pages;
     private JPanel dashboard;
-
+    private int indexReceipt;
 
     public HomePage() {
         super("contabilis");
 
-        // initialize cardlayout
         cardLayout = new CardLayout();
-
-
-        // create the main panel for Card layout
         pages = new JPanel(cardLayout);
 
-        // panel for add receipt
         JPanel addReceipt = new JPanel();
         addReceipt.setBackground(new Color(240, 240, 240));
         addReceipt.add(new JLabel("Add Receipts Panel"));
 
-        // panel for dashboard with FlowLayout
         this.dashboard = new JPanel();
-        this.dashboard.setLayout(new FlowLayout(FlowLayout.LEFT, 25, 25));  // padding 25px
+        this.dashboard.setLayout(new FlowLayout(FlowLayout.LEFT, 25, 25));
         this.dashboard.setBackground(new Color(240, 240, 240));
 
-        // panel for view all receipts
         JPanel viewAllReceipts = new JPanel();
         viewAllReceipts.setBackground(new Color(240, 240, 240));
         viewAllReceipts.add(new JLabel("View All Receipts Panel"));
 
-        // panel for reports
         JPanel reports = new JPanel();
         reports.setBackground(new Color(240, 240, 240));
         reports.add(new JLabel("Reports Panel"));
 
-        // add pages with correct IDs
         pages.add(dashboard, "DASHBOARD");
         pages.add(new AddReceiptPanel(), "RECEIPTS");
         pages.add(viewAllReceipts, "VIEW_ALL");
         pages.add(reports, "REPORTS");
 
-        // get screen dimension
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         final int width = (int) screenSize.getWidth();
         final int height = (int) screenSize.getHeight();
 
-        // add navbar
-        Navbar navbar = new Navbar(this,this, cardLayout, pages);
+        Navbar navbar = new Navbar(this, this, cardLayout, pages);
 
-        // set window dimension
         this.setSize(width, height);
         this.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        // Class with default color
         Colors color = new Colors();
 
-        // title of application top center
         JLabel label = new JLabel("Contabilis", SwingConstants.CENTER);
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         topPanel.add(label);
 
-        // set colors
         Color blueLight = color.LightBlue();
         Color lightGray = color.LightGray();
         Color gold = color.Gold();
 
-        // apply colors
         this.getContentPane().setBackground(blueLight);
         label.setOpaque(true);
         label.setForeground(gold);
@@ -92,18 +77,14 @@ public class HomePage extends JFrame {
 
         label.setFont(new Font("Arial", Font.BOLD, 36));
 
-        // Make sure the center panel shows the background
         navbar.setOpaque(true);
 
-        // Set up the layout
         this.setLayout(new BorderLayout());
 
-        // Add components to frame
         this.add(topPanel, BorderLayout.NORTH);
         this.add(navbar, BorderLayout.WEST);
-        this.add(pages, BorderLayout.CENTER);  // Add the pages panel to the center
+        this.add(pages, BorderLayout.CENTER);
 
-        // Center the frame on screen
         setLocationRelativeTo(null);
         this.setVisible(true);
     }
@@ -114,27 +95,25 @@ public class HomePage extends JFrame {
             List<Receipt> receipts = mapper.readValue(Paths.get("/home/alessandro/IdeaProjects/Contabilita/receipts.json").toFile(),
                     new TypeReference<List<Receipt>>() {});
 
-            // Clear existing dashboard content
             this.dashboard.removeAll();
+            this.indexReceipt = 0;
 
-            int numbOfReceipt = 0;
-            // Create a rectangle for each valid receipt
             for (Receipt receipt : receipts) {
                 if (receipt.getCategory() != null && receipt.getAmount() != 0 && receipt.getDescription() != null) {
-                    // Create and setup rectangle
                     JPanel rect = new JPanel();
-                    rect.setLayout(new BoxLayout(rect, BoxLayout.Y_AXIS));  // Importante: usa BoxLayout
+                    rect.setLayout(new BoxLayout(rect, BoxLayout.Y_AXIS));
                     rect.setPreferredSize(new Dimension(200, 150));
                     rect.setBackground(new Color(240, 240, 240));
                     rect.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+                    rect.addMouseListener(this);
 
-                    // Top info panel
                     JPanel topinfo = new JPanel();
                     topinfo.setBackground(new Color(50, 136, 59));
                     topinfo.add(new JLabel(String.format("Category: %s", receipt.getCategory())));
                     topinfo.add(new JLabel(String.format("Amount: %.2f", receipt.getAmount())));
 
-                    // Description area with scroll
+                    rect.putClientProperty("index", this.indexReceipt);
+
                     JTextArea descArea = new JTextArea(receipt.getDescription());
                     descArea.setLineWrap(true);
                     descArea.setWrapStyleWord(true);
@@ -145,14 +124,11 @@ public class HomePage extends JFrame {
 
                     rect.add(topinfo);
                     rect.add(scrollPane);
-
-                    // Add rectangle to dashboard
                     this.dashboard.add(rect);
-                    numbOfReceipt++;
+                    this.indexReceipt++;
                 }
             }
 
-            // Refresh the dashboard
             this.dashboard.revalidate();
             this.dashboard.repaint();
 
@@ -165,4 +141,31 @@ public class HomePage extends JFrame {
         }
     }
 
+    @Override
+    public void mouseClicked(MouseEvent mouseEvent) {
+        System.out.println("clicked");
     }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+        JPanel panel = (JPanel) e.getSource();
+        int index = (int) panel.getClientProperty("index");
+        System.out.println("Mouse entered panel " + index);
+        panel.setBorder(BorderFactory.createLineBorder(Color.RED, 2));
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+        JPanel panel = (JPanel) e.getSource();
+        int index = (int) panel.getClientProperty("index");
+        panel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 1));
+    }
+}
