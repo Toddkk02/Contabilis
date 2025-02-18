@@ -19,6 +19,7 @@ import java.util.List;
 public class HomePage extends JFrame {
     private CardLayout cardLayout;
     private JPanel pages;
+    private JPanel dashboard;
 
 
     public HomePage() {
@@ -37,54 +38,9 @@ public class HomePage extends JFrame {
         addReceipt.add(new JLabel("Add Receipts Panel"));
 
         // panel for dashboard with FlowLayout
-        JPanel dashboard = new JPanel();
-        dashboard.setLayout(new FlowLayout(FlowLayout.LEFT, 25, 25));  // padding 25px
-        dashboard.setBackground(new Color(240, 240, 240));
-        // Get receipts data
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            List<Receipt> receipts = mapper.readValue(Paths.get("/home/alessandro/IdeaProjects/Contabilita/receipts.json").toFile(),
-                    new TypeReference<List<Receipt>>() {});
-            // a counter for receipt
-            int numbOfReceipt = 0;
-            // Create a rectangle for each valid receipt
-            for (Receipt receipt : receipts) {
-                if (receipt.getCategory() != null && receipt.getAmount() != 0 && receipt.getDescription() != null) {
-                    // Create and setup rectangle
-                    JPanel rect = new JPanel();
-                    rect.setLayout(new BoxLayout(rect, BoxLayout.Y_AXIS));  // Importante: usa BoxLayout
-                    rect.setPreferredSize(new Dimension(200, 150));
-                    rect.setBackground(new Color(240, 240, 240));
-                    rect.setBorder(BorderFactory.createLineBorder(Color.black, 1));
-
-                    // Top info panel
-                    JPanel topinfo = new JPanel();
-                    topinfo.setBackground(new Color(50, 136, 59));
-                    topinfo.add(new JLabel(String.format("Category: %s", receipt.getCategory())));
-                    topinfo.add(new JLabel(String.format("Amount: %.2f", receipt.getAmount())));
-
-                    // Description area with scroll
-                    JTextArea descArea = new JTextArea(receipt.getDescription());
-                    descArea.setLineWrap(true);
-                    descArea.setWrapStyleWord(true);
-                    descArea.setEditable(false);
-
-                    JScrollPane scrollPane = new JScrollPane(descArea);
-                    scrollPane.setPreferredSize(new Dimension(180, 80));
-
-                    rect.add(topinfo);
-                    rect.add(scrollPane);
-
-                    // Add rectangle to dashboard
-                    dashboard.add(rect);
-                    numbOfReceipt++;
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            JLabel errorLabel = new JLabel("Error loading receipts");
-            dashboard.add(errorLabel);
-        }
+        this.dashboard = new JPanel();
+        this.dashboard.setLayout(new FlowLayout(FlowLayout.LEFT, 25, 25));  // padding 25px
+        this.dashboard.setBackground(new Color(240, 240, 240));
 
         // panel for view all receipts
         JPanel viewAllReceipts = new JPanel();
@@ -108,7 +64,7 @@ public class HomePage extends JFrame {
         final int height = (int) screenSize.getHeight();
 
         // add navbar
-        Navbar navbar = new Navbar(this, cardLayout, pages);
+        Navbar navbar = new Navbar(this,this, cardLayout, pages);
 
         // set window dimension
         this.setSize(width, height);
@@ -151,4 +107,62 @@ public class HomePage extends JFrame {
         setLocationRelativeTo(null);
         this.setVisible(true);
     }
-}
+
+    public void UpdateDashboard() {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            List<Receipt> receipts = mapper.readValue(Paths.get("/home/alessandro/IdeaProjects/Contabilita/receipts.json").toFile(),
+                    new TypeReference<List<Receipt>>() {});
+
+            // Clear existing dashboard content
+            this.dashboard.removeAll();
+
+            int numbOfReceipt = 0;
+            // Create a rectangle for each valid receipt
+            for (Receipt receipt : receipts) {
+                if (receipt.getCategory() != null && receipt.getAmount() != 0 && receipt.getDescription() != null) {
+                    // Create and setup rectangle
+                    JPanel rect = new JPanel();
+                    rect.setLayout(new BoxLayout(rect, BoxLayout.Y_AXIS));  // Importante: usa BoxLayout
+                    rect.setPreferredSize(new Dimension(200, 150));
+                    rect.setBackground(new Color(240, 240, 240));
+                    rect.setBorder(BorderFactory.createLineBorder(Color.black, 1));
+
+                    // Top info panel
+                    JPanel topinfo = new JPanel();
+                    topinfo.setBackground(new Color(50, 136, 59));
+                    topinfo.add(new JLabel(String.format("Category: %s", receipt.getCategory())));
+                    topinfo.add(new JLabel(String.format("Amount: %.2f", receipt.getAmount())));
+
+                    // Description area with scroll
+                    JTextArea descArea = new JTextArea(receipt.getDescription());
+                    descArea.setLineWrap(true);
+                    descArea.setWrapStyleWord(true);
+                    descArea.setEditable(false);
+
+                    JScrollPane scrollPane = new JScrollPane(descArea);
+                    scrollPane.setPreferredSize(new Dimension(180, 80));
+
+                    rect.add(topinfo);
+                    rect.add(scrollPane);
+
+                    // Add rectangle to dashboard
+                    this.dashboard.add(rect);
+                    numbOfReceipt++;
+                }
+            }
+
+            // Refresh the dashboard
+            this.dashboard.revalidate();
+            this.dashboard.repaint();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            JLabel errorLabel = new JLabel("Error loading receipts");
+            this.dashboard.add(errorLabel);
+            this.dashboard.revalidate();
+            this.dashboard.repaint();
+        }
+    }
+
+    }
