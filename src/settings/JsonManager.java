@@ -10,12 +10,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class JsonManager {
-    private static final String FILE_PATH = "receipts.json";
     private ObjectMapper mapper = new ObjectMapper();
 
     public void saveReceipts(List<Receipt> receipts) {
         try {
-            mapper.writeValue(new File(FILE_PATH), receipts);
+            File file = PathManager.getReceiptsPath().toFile();
+            // Create parent directories if they don't exist
+            file.getParentFile().mkdirs();
+            mapper.writeValue(file, receipts);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -23,7 +25,7 @@ public class JsonManager {
 
     public List<Receipt> loadReceipts() {
         try {
-            File file = new File(FILE_PATH);
+            File file = PathManager.getReceiptsPath().toFile();
             if (file.exists()) {
                 return mapper.readValue(file,
                         TypeFactory.defaultInstance().constructCollectionType(List.class, Receipt.class));

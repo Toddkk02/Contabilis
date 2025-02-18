@@ -3,19 +3,16 @@ package GUI;
 import Panels.AddReceiptPanel;
 import models.Receipt;
 import networking.DeleteReceipt;
-import networking.PopulateDashboard;
 import settings.Colors;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import settings.PathManager;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 public class HomePage extends JFrame implements MouseListener {
@@ -98,16 +95,19 @@ public class HomePage extends JFrame implements MouseListener {
 
     public void UpdateDashboard() {
         try {
+            // Assicurati che il file esista
+            PathManager.ensureDirectoriesExist();
+
             ObjectMapper mapper = new ObjectMapper();
-            List<Receipt> receipts = mapper.readValue(Paths.get("/home/alessandro/IdeaProjects/Contabilita/receipts.json").toFile(),
-                    new TypeReference<List<Receipt>>() {
-                    });
+            List<Receipt> receipts = mapper.readValue(PathManager.getReceiptsPath().toFile(),
+                    new TypeReference<List<Receipt>>() {});
 
             this.dashboard.removeAll();
             this.indexReceipt = 0;
 
             for (Receipt receipt : receipts) {
                 if (receipt.getCategory() != null && receipt.getAmount() != 0 && receipt.getDescription() != null) {
+                    // resto del codice rimane uguale
                     JPanel rect = new JPanel();
                     rect.setLayout(new BoxLayout(rect, BoxLayout.Y_AXIS));
                     rect.setPreferredSize(new Dimension(200, 275));
@@ -115,9 +115,8 @@ public class HomePage extends JFrame implements MouseListener {
                     rect.setBorder(BorderFactory.createLineBorder(Color.black, 1));
                     rect.addMouseListener(this);
 
-                    // Pannello verde con info della ricevuta
                     JPanel topinfo = new JPanel();
-                    topinfo.setLayout(new FlowLayout());  // o GridLayout(2,1) per mettere le label una sotto l'altra
+                    topinfo.setLayout(new FlowLayout());
                     topinfo.setBackground(new Color(50, 136, 59));
                     topinfo.setMinimumSize(new Dimension(200, 50));
                     topinfo.setMaximumSize(new Dimension(200, 50));
@@ -143,13 +142,13 @@ public class HomePage extends JFrame implements MouseListener {
                 }
             }
 
-
             this.dashboard.revalidate();
             this.dashboard.repaint();
 
         } catch (Exception e) {
             e.printStackTrace();
-            JLabel errorLabel = new JLabel("Error loading receipts");
+            JLabel errorLabel = new JLabel("Error loading receipts: " + e.getMessage());
+            this.dashboard.removeAll();
             this.dashboard.add(errorLabel);
             this.dashboard.revalidate();
             this.dashboard.repaint();
@@ -240,9 +239,15 @@ public class HomePage extends JFrame implements MouseListener {
     }
 
     public void DrawTrashBin() {
-        ImageIcon imageIcon = new ImageIcon("src/image/trashbin.png");
-        Image image = imageIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
-        this.trashbinIcon = new JLabel(new ImageIcon(image));  // usa this.trashbinIcon invece di creare una nuova variabile locale
+        ImageIcon imageIcon = PathManager.getImageIcon("trashbin.png");  // Rimosso "image/" dal percorso
+        if (imageIcon != null) {
+            Image image = imageIcon.getImage().getScaledInstance(80, 80, Image.SCALE_SMOOTH);
+            this.trashbinIcon = new JLabel(new ImageIcon(image));
+        } else {
+            // Fallback if image cannot be loaded
+            this.trashbinIcon = new JLabel("🗑️");  // Unicode trash bin symbol as fallback
+            this.trashbinIcon.setFont(new Font("Dialog", Font.PLAIN, 40));
+        }
 
         JLabel textForNameAndVersion = new JLabel("Contabilis 2025 Beta Version");
         textForNameAndVersion.setForeground(Color.orange);

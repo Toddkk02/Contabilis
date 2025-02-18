@@ -3,17 +3,16 @@ package networking;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import models.Receipt;
+import settings.PathManager;
 
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 
 public class DeleteReceipt {
-
     public static void deleteReceiptAtIndex(int index) {
         try {
             ObjectMapper mapper = new ObjectMapper();
-            Path path = Paths.get("/home/alessandro/IdeaProjects/Contabilita/receipts.json");
+            Path path = PathManager.getReceiptsPath();
 
             // Leggi il JSON esistente
             List<Receipt> receipts = mapper.readValue(path.toFile(),
@@ -26,7 +25,6 @@ public class DeleteReceipt {
                 // Scrivi il nuovo JSON aggiornato
                 mapper.writeValue(path.toFile(), receipts);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
