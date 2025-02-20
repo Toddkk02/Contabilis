@@ -14,7 +14,7 @@ public class Navbar extends JPanel implements ActionListener {
     // UI Components
     private JButton addReceipt;
     private JButton viewAll;
-    private JButton report;
+    private JButton finacialTarget;
     private JButton dashboard;
 
     // Navigation control
@@ -50,13 +50,13 @@ public class Navbar extends JPanel implements ActionListener {
         this.dashboard = new JButton("Dashboard");
         this.addReceipt = new JButton("Add Receipt");
         this.viewAll = new JButton("View All Receipts");
-        this.report = new JButton("Reports");
+        this.finacialTarget = new JButton("Financial Target");
 
         // Center align all buttons
         dashboard.setAlignmentX(Component.CENTER_ALIGNMENT);
         addReceipt.setAlignmentX(Component.CENTER_ALIGNMENT);
         viewAll.setAlignmentX(Component.CENTER_ALIGNMENT);
-        report.setAlignmentX(Component.CENTER_ALIGNMENT);
+        finacialTarget.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Add buttons with spacing
         add(Box.createRigidArea(new Dimension(0, 150))); // Top spacing
@@ -66,13 +66,13 @@ public class Navbar extends JPanel implements ActionListener {
         add(Box.createRigidArea(new Dimension(0, 150)));
         add(viewAll);
         add(Box.createRigidArea(new Dimension(0, 150)));
-        add(report);
+        add(finacialTarget);
 
         // Add action listeners to handle button clicks
         dashboard.addActionListener(this);
         addReceipt.addActionListener(this);
         viewAll.addActionListener(this);
-        report.addActionListener(this);
+        finacialTarget.addActionListener(this);
     }
 
     /**
@@ -87,8 +87,8 @@ public class Navbar extends JPanel implements ActionListener {
             cardLayout.show(pages, "RECEIPTS");
         } else if (e.getSource() == viewAll) {
             cardLayout.show(pages, "VIEW_ALL");
-        } else if (e.getSource() == report) {
-            cardLayout.show(pages, "REPORTS");
+        } else if (e.getSource() == finacialTarget) {
+            cardLayout.show(pages, "FINANCIAL_TARGET");
         }
     }
 }

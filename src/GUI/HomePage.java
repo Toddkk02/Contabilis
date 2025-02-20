@@ -1,6 +1,7 @@
 package GUI;
 
 import Panels.AddReceiptPanel;
+import Panels.FinacialTarget;
 import models.Receipt;
 import networking.DeleteReceipt;
 import org.knowm.xchart.PieChart;
@@ -17,6 +18,7 @@ import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -109,15 +111,15 @@ public class HomePage extends JFrame implements MouseListener {
         viewAllReceipts.add(new JLabel("View All Receipts Panel"));
 
         // Reports panel
-        JPanel reports = new JPanel();
-        reports.setBackground(new Color(240, 248, 255)); // Cornflower blue
-        reports.add(new JLabel("Reports Panel"));
+        JPanel finacialTarget = new JPanel();
+        finacialTarget.setBackground(new Color(240, 248, 255)); // Cornflower blue
+        finacialTarget.add(new JLabel("Reports Panel"));
 
         // Add all pages to the card layout
         pages.add(dashboard, "DASHBOARD");
         pages.add(new AddReceiptPanel(), "RECEIPTS");
         pages.add(viewAllReceipts, "VIEW_ALL");
-        pages.add(reports, "REPORTS");
+        pages.add(new FinacialTarget(), "FINANCIAL_TARGET");
 
         // Get screen dimensions for responsive design
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -185,45 +187,66 @@ public class HomePage extends JFrame implements MouseListener {
             // Create visual elements for each receipt
             for (Receipt receipt : receipts) {
                 if (receipt.getCategory() != null && receipt.getAmount() != 0 && receipt.getDescription() != null) {
-                    // Create receipt panel
-                    JPanel rect = new JPanel();
-                    rect.setLayout(new BoxLayout(rect, BoxLayout.Y_AXIS));
+                    // Create receipt panel with BorderLayout for better control
+                    JPanel rect = new JPanel(new BorderLayout(0, 0));
                     rect.setPreferredSize(new Dimension(200, 275));
-                    rect.setBackground(new Color(240, 248, 255)); // Cornflower blue
+                    rect.setBackground(new Color(240, 248, 255));
                     rect.setBorder(BorderFactory.createLineBorder(Color.black, 1));
                     rect.addMouseListener(this);
-
-                    // Create header info panel for receipt
-                    JPanel topinfo = new JPanel();
-                    topinfo.setLayout(new FlowLayout());
-                    topinfo.setBackground(new Color(50, 136, 59));
-                    topinfo.setMinimumSize(new Dimension(200, 50));
-                    topinfo.setMaximumSize(new Dimension(200, 50));
-                    topinfo.setPreferredSize(new Dimension(200, 50));
-
-                    // Add receipt details
-                    topinfo.add(new JLabel(String.format("Category: %s", receipt.getCategory())));
-                    topinfo.add(new JLabel(String.format("Amount: %.2f", receipt.getAmount())));
-
                     rect.putClientProperty("index", this.indexReceipt);
 
-                    // Create description area
+                    // Create header info panel
+                    JPanel topinfo = new JPanel(new GridLayout(2, 1));
+                    topinfo.setBackground(new Color(50, 136, 59));
+
+                    // Center-align the labels
+                    JLabel categoryLabel = new JLabel(String.format("Category: %s", receipt.getCategory()), SwingConstants.CENTER);
+                    JLabel amountLabel = new JLabel(String.format("Amount: %.2f", receipt.getAmount()), SwingConstants.CENTER);
+                    categoryLabel.setForeground(Color.WHITE);
+                    amountLabel.setForeground(Color.WHITE);
+
+                    topinfo.add(categoryLabel);
+                    topinfo.add(amountLabel);
+
+                    // Create center panel for description
+                    JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
+                    centerPanel.setBackground(new Color(240, 248, 255));
+                    centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
                     JTextArea descArea = new JTextArea(receipt.getDescription());
                     descArea.setLineWrap(true);
                     descArea.setWrapStyleWord(true);
                     descArea.setEditable(false);
+                    descArea.setBackground(new Color(255, 255, 255));
 
                     JScrollPane scrollPane = new JScrollPane(descArea);
-                    scrollPane.setPreferredSize(new Dimension(180, 80));
+                    scrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
+                    centerPanel.add(scrollPane, BorderLayout.CENTER);
 
-                    rect.add(topinfo);
-                    rect.add(scrollPane);
+                    // Create bottom panel for date with simple format
+                    JPanel datePanel = new JPanel(new BorderLayout());
+                    datePanel.setBackground(new Color(240, 248, 255));
+
+                    String formattedDate = receipt.getFormattedDate();
+
+                    JLabel dateLabel = new JLabel("Date: " + formattedDate, SwingConstants.CENTER);
+                    dateLabel.setForeground(Color.DARK_GRAY);
+                    dateLabel.setFont(new Font("Arial", Font.ITALIC, 12));
+                    dateLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+
+                    datePanel.add(dateLabel, BorderLayout.CENTER);
+
+                    // Add all components to the receipt panel
+                    rect.add(topinfo, BorderLayout.NORTH);
+                    rect.add(centerPanel, BorderLayout.CENTER);
+                    rect.add(datePanel, BorderLayout.SOUTH);
+
                     this.receiptsPanel.add(rect);
                     this.indexReceipt++;
                 }
             }
 
-            // Aggiorna il grafico
+            // Update the chart
             updateChart();
 
             this.receiptsPanel.revalidate();

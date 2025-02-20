@@ -12,5 +12,6 @@
     <orderEntry type="library" name="jackson-databind-2.11.0" level="project" />
     <orderEntry type="library" name="jackson-core-2.11.0" level="project" />
     <orderEntry type="library" name="xchart-3.8.8" level="project" />
+    <orderEntry type="library" name="swingx-all-1.6.4" level="project" />
   </component>
 </module>

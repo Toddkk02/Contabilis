@@ -15,9 +15,11 @@ public class PopulateDashboard {
                 String getCateg = receipt.getCategory();
                 String getAmount = String.valueOf(receipt.getAmount());
                 String getDescr = receipt.getDescription();
+                String getDate = String.valueOf(receipt.getDate());
                 sb.append(getCateg);
                 sb.append(getAmount);
                 sb.append(getDescr);
+                sb.append(getDate);
             }
         } catch (Exception e) {
             e.printStackTrace();
