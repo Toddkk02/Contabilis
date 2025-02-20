@@ -23,6 +23,7 @@ public class HomePage extends JFrame implements MouseListener {
     private JLabel trashbinIcon;
     private JPanel topinfo;
     private boolean isDeleting = false;
+
     public HomePage() {
         super("contabilis");
 
@@ -159,7 +160,6 @@ public class HomePage extends JFrame implements MouseListener {
     public void mouseClicked(MouseEvent e) {
         if(e.getSource() == trashbinIcon) {
             isDeleting = !isDeleting;
-            // Trova tutti i panel nel dashboard e colora i loro topinfo
             for(Component comp : dashboard.getComponents()) {
                 if(comp instanceof JPanel) {
                     JPanel receiptPanel = (JPanel)comp;
@@ -205,6 +205,7 @@ public class HomePage extends JFrame implements MouseListener {
             dashboard.revalidate();
             dashboard.repaint();
         }
+
     }
     @Override
     public void mousePressed(MouseEvent e) {
