@@ -12,15 +12,20 @@ import java.util.ArrayList;
 
 public class PathManager {
     private static final String RECEIPTS_FILENAME = "receipts.json";
+    private static final String TARGET_FILENAME = "target.json";
 
     public static Path getReceiptsPath() {
         String userDir = System.getProperty("user.dir");
         return Paths.get(userDir, RECEIPTS_FILENAME);
     }
 
+    public static Path getTargetPath() {
+        String userDir = System.getProperty("user.dir");
+        return Paths.get(userDir, TARGET_FILENAME);
+    }
+
     public static ImageIcon getImageIcon(String imageName) {
         try {
-            // Prima prova a caricare dalla directory delle risorse nel JAR
             InputStream is = PathManager.class.getResourceAsStream("/image/" + imageName);
             if (is != null) {
                 byte[] imageBytes = is.readAllBytes();
@@ -34,14 +39,27 @@ public class PathManager {
     }
 
     public static void ensureDirectoriesExist() {
+        ObjectMapper mapper = new ObjectMapper();
+
         // Create receipts.json file if it doesn't exist
         File receiptsFile = getReceiptsPath().toFile();
-        if (!receiptsFile.exists()) {
+        if (!receiptsFile.exists() || receiptsFile.length() == 0) {
             try {
                 receiptsFile.getParentFile().mkdirs();
-                receiptsFile.createNewFile();
-                // Initialize with empty array
-                new ObjectMapper().writeValue(receiptsFile, new ArrayList<>());
+                // Initialize with a valid JSON array
+                mapper.writeValue(receiptsFile, new ArrayList<>());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Create target.json file if it doesn't exist
+        File targetFile = getTargetPath().toFile();
+        if (!targetFile.exists() || targetFile.length() == 0) {
+            try {
+                targetFile.getParentFile().mkdirs();
+                // Initialize with null but in valid JSON format
+                mapper.writeValue(targetFile, null);
             } catch (IOException e) {
                 e.printStackTrace();
             }

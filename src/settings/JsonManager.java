@@ -1,5 +1,6 @@
 package settings;
 
+import models.Target;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import models.Receipt;
@@ -15,8 +16,11 @@ public class JsonManager {
     public void saveReceipts(List<Receipt> receipts) {
         try {
             File file = PathManager.getReceiptsPath().toFile();
-            // Create parent directories if they don't exist
             file.getParentFile().mkdirs();
+            // Assicurati che il file sia vuoto prima di scrivere
+            if (file.exists()) {
+                file.delete();
+            }
             mapper.writeValue(file, receipts);
         } catch (IOException e) {
             e.printStackTrace();
@@ -26,19 +30,55 @@ public class JsonManager {
     public List<Receipt> loadReceipts() {
         try {
             File file = PathManager.getReceiptsPath().toFile();
-            if (file.exists()) {
+            if (!file.exists() || file.length() == 0) {
+                // Se il file non esiste o è vuoto, inizializzalo con un array vuoto
+                saveReceipts(new ArrayList<>());
+                return new ArrayList<>();
+            }
+            try {
                 return mapper.readValue(file,
                         TypeFactory.defaultInstance().constructCollectionType(List.class, Receipt.class));
+            } catch (Exception e) {
+                // Se c'è un errore di deserializzazione, resetta il file
+                e.printStackTrace();
+                saveReceipts(new ArrayList<>());
+                return new ArrayList<>();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+            return new ArrayList<>();
         }
-        return new ArrayList<>();
+    }
+
+    public List<Receipt> getReceipts() {
+        return loadReceipts();
     }
 
     public void addReceipt(Receipt receipt) {
         List<Receipt> receipts = loadReceipts();
         receipts.add(receipt);
         saveReceipts(receipts);
+    }
+
+    public void setTarget(Target target) {
+        try {
+            File file = PathManager.getTargetPath().toFile();
+            file.getParentFile().mkdirs();
+            mapper.writeValue(file, target);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public Target getTarget() {
+        try {
+            File file = PathManager.getTargetPath().toFile();
+            if (file.exists()) {
+                return mapper.readValue(file, Target.class);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

@@ -1,7 +1,7 @@
 package GUI;
 
 import Panels.AddReceiptPanel;
-import Panels.FinacialTarget;
+import Panels.BalanceTracker;
 import models.Receipt;
 import networking.DeleteReceipt;
 import org.knowm.xchart.PieChart;
@@ -119,7 +119,7 @@ public class HomePage extends JFrame implements MouseListener {
         pages.add(dashboard, "DASHBOARD");
         pages.add(new AddReceiptPanel(), "RECEIPTS");
         pages.add(viewAllReceipts, "VIEW_ALL");
-        pages.add(new FinacialTarget(), "FINANCIAL_TARGET");
+        pages.add(new BalanceTracker(), "FINANCIAL_TARGET");
 
         // Get screen dimensions for responsive design
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();

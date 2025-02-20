@@ -23,33 +23,32 @@ public class AddReceiptPanel extends JPanel implements ActionListener {
     private Date date;
 
     public AddReceiptPanel() {
-        // getting screen dimension
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         final int height = (int) screenSize.getHeight();
 
-        // building the app
         this.picker = new JXDatePicker();
         this.date = Calendar.getInstance().getTime();
         this.picker.setDate(this.date);
-        this.picker.setFormats(new SimpleDateFormat("dd.MM.yyyy"));
+        this.picker.setFormats(new SimpleDateFormat("dd/MM/yyyy"));
         this.picker.addActionListener(e -> {
             this.date = this.picker.getDate();
         });
 
-        JLabel categoryLabel = new JLabel("Category: ");
+        JLabel categoryLabel = new JLabel("Categoria: ");
         this.categoryMenu = new JPopupMenu();
 
         String[] categories = {
-                "Daily Expenses",
-                "Transport and Mobility",
-                "Home and Bills",
-                "Entertainment and Leisure",
-                "Shopping and Personal Care",
-                "Health And Wellness",
-                "Education And Learning",
-                "Work And Business",
-                "Pets",
-                "Gifts And Donations"
+                "Spese Quotidiane",
+                "Trasporti e Mobilità",
+                "Casa e Bollette",
+                "Intrattenimento e Svago",
+                "Shopping e Cura Personale",
+                "Salute e Benessere",
+                "Istruzione e Formazione",
+                "Lavoro e Business",
+                "Animali",
+                "Regali e Donazioni",
+                "Altro"
         };
 
         for (String category : categories) {
@@ -61,15 +60,15 @@ public class AddReceiptPanel extends JPanel implements ActionListener {
             this.categoryMenu.add(menuItem);
         }
 
-        dropdownButton = new JButton("Select Category");
+        dropdownButton = new JButton("Seleziona Categoria");
         dropdownButton.setBounds(100, 50, 50, 50);
         dropdownButton.addActionListener(e -> this.categoryMenu.show(dropdownButton, 0, dropdownButton.getHeight()));
 
-        JLabel amountLabel = new JLabel("Amount: ");
+        JLabel amountLabel = new JLabel("Importo: ");
         this.amount = new JTextField();
-        JLabel descriptionLabel = new JLabel("Description: ");
+        JLabel descriptionLabel = new JLabel("Descrizione: ");
         this.description = new JTextArea();
-        this.save = new JButton("Save");
+        this.save = new JButton("Salva");
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
@@ -109,63 +108,46 @@ public class AddReceiptPanel extends JPanel implements ActionListener {
         save.addActionListener(this);
     }
 
-    public double saveAmount() {
-        return Double.parseDouble(this.amount.getText());
-    }
-
-    public String saveCategory() {
-        return this.selectedCategory;
-    }
-
-    public String saveDescription() {
-        return this.description.getText();
-    }
-
-    public String saveDate() {
-        return this.picker.getDate().toString();
-    }
-
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         if (actionEvent.getSource() == save) {
             try {
                 if (selectedCategory.isEmpty()) {
                     JOptionPane.showMessageDialog(this,
-                            "Please select a category!",
-                            "Error",
+                            "Seleziona una categoria!",
+                            "Errore",
                             JOptionPane.ERROR_MESSAGE);
                     return;
                 }
 
-                String cat = saveCategory();
-                double amt = saveAmount();
-                String desc = saveDescription();
+                double amt = Double.parseDouble(amount.getText().replace(",", "."));
+                String desc = description.getText();
 
                 // Formatta la data nel formato corretto
-                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-                String formattedDate = formatter.format(this.picker.getDate());
+                SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy");
+                String formattedDate = outputFormat.format(this.picker.getDate());
 
-                Receipt receipt = new Receipt(cat, amt, desc, formattedDate);
+                Receipt receipt = new Receipt(selectedCategory, amt, desc, formattedDate);
 
                 JsonManager jsonManager = new JsonManager();
                 jsonManager.addReceipt(receipt);
 
                 // Reset dei campi
                 selectedCategory = "";
-                dropdownButton.setText("Select Category");
+                dropdownButton.setText("Seleziona Categoria");
                 amount.setText("");
                 description.setText("");
-                picker.setDate(Calendar.getInstance().getTime()); // Reset anche della data
+                picker.setDate(Calendar.getInstance().getTime());
 
                 JOptionPane.showMessageDialog(this,
-                        "Receipt inserted successfully!",
-                        "Success",
+                        "Ricevuta inserita con successo!",
+                        "Successo",
                         JOptionPane.INFORMATION_MESSAGE);
 
             } catch (NumberFormatException e) {
                 JOptionPane.showMessageDialog(this,
-                        "Insert a valid Amount!",
-                        "Error",
+                        "Inserisci un importo valido!",
+                        "Errore",
                         JOptionPane.ERROR_MESSAGE);
             }
         }

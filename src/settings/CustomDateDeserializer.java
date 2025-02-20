@@ -8,40 +8,35 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 public class CustomDateDeserializer extends JsonDeserializer<Date> {
-    private static final SimpleDateFormat FORMAT_STANDARD = new SimpleDateFormat("yyyy-MM-dd");
-    private static final SimpleDateFormat FORMAT_COMPLETO = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
-    private static final SimpleDateFormat FORMAT_EUROPEAN = new SimpleDateFormat("dd/MM/yyyy");
+    private static final SimpleDateFormat[] formatters = {
+            new SimpleDateFormat("yyyy-MM-dd"),
+            new SimpleDateFormat("dd/MM/yyyy"),
+            new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy")
+    };
 
     @Override
-    public Date deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
-        String dateString = jsonParser.getText();
+    public Date deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+        String dateStr = p.getText();
 
-        // Try each format in sequence
-        ParseException lastException = null;
-
+        // Try parsing as timestamp first
         try {
-            return FORMAT_STANDARD.parse(dateString);
-        } catch (ParseException e1) {
-            lastException = e1;
+            long timestamp = Long.parseLong(dateStr);
+            return new Date(timestamp);
+        } catch (NumberFormatException ignored) {
+            // Not a timestamp, continue with other formats
         }
 
-        try {
-            return FORMAT_COMPLETO.parse(dateString);
-        } catch (ParseException e2) {
-            lastException = e2;
+        // Try all date formats
+        for (SimpleDateFormat formatter : formatters) {
+            try {
+                return formatter.parse(dateStr);
+            } catch (ParseException ignored) {
+                // Try next format
+            }
         }
 
-        try {
-            return FORMAT_EUROPEAN.parse(dateString);
-        } catch (ParseException e3) {
-            lastException = e3;
-        }
-
-        // If none of the formats worked, throw an exception with details
-        throw new IOException("Formato data non valido: " + dateString +
-                ". Formati supportati: yyyy-MM-dd, dd/MM/yyyy, o EEE MMM dd HH:mm:ss zzz yyyy", lastException);
+        throw new IOException("Invalid date format: " + dateStr);
     }
 }
