@@ -82,7 +82,7 @@ public class Navbar extends JPanel implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == dashboard) {
             cardLayout.show(pages, "DASHBOARD");
-            homepage.UpdateDashboard(); // Refresh dashboard content
+            homepage.refreshDashboard(); // Refresh dashboard content
         } else if (e.getSource() == addReceipt) {
             cardLayout.show(pages, "RECEIPTS");
         } else if (e.getSource() == viewAll) {
