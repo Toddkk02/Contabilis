@@ -48,6 +48,8 @@ public class AddReceiptPanel extends JPanel implements ActionListener {
                 "Lavoro e Business",
                 "Animali",
                 "Regali e Donazioni",
+                "Farmaci",
+                "Giardinaggio",
                 "Altro"
         };
 

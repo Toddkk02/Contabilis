@@ -16,11 +16,13 @@ public class JsonManager {
     public void saveReceipts(List<Receipt> receipts) {
         try {
             File file = PathManager.getReceiptsPath().toFile();
-            file.getParentFile().mkdirs();
-            // Assicurati che il file sia vuoto prima di scrivere
-            if (file.exists()) {
-                file.delete();
+            file.getParentFile().mkdirs(); // Crea la cartella se non esiste
+
+            // Crea il file se non esiste
+            if (!file.exists()) {
+                file.createNewFile();
             }
+
             mapper.writeValue(file, receipts);
         } catch (IOException e) {
             e.printStackTrace();
@@ -30,11 +32,14 @@ public class JsonManager {
     public List<Receipt> loadReceipts() {
         try {
             File file = PathManager.getReceiptsPath().toFile();
+            file.getParentFile().mkdirs(); // Crea la cartella se non esiste
+
+            // Se il file non esiste o è vuoto, inizializzalo con un array vuoto
             if (!file.exists() || file.length() == 0) {
-                // Se il file non esiste o è vuoto, inizializzalo con un array vuoto
                 saveReceipts(new ArrayList<>());
                 return new ArrayList<>();
             }
+
             try {
                 return mapper.readValue(file,
                         TypeFactory.defaultInstance().constructCollectionType(List.class, Receipt.class));
@@ -63,7 +68,13 @@ public class JsonManager {
     public void setTarget(Target target) {
         try {
             File file = PathManager.getTargetPath().toFile();
-            file.getParentFile().mkdirs();
+            file.getParentFile().mkdirs(); // Crea la cartella se non esiste
+
+            // Crea il file se non esiste
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+
             mapper.writeValue(file, target);
         } catch (IOException e) {
             e.printStackTrace();
@@ -73,9 +84,13 @@ public class JsonManager {
     public Target getTarget() {
         try {
             File file = PathManager.getTargetPath().toFile();
-            if (file.exists()) {
-                return mapper.readValue(file, Target.class);
+            file.getParentFile().mkdirs(); // Crea la cartella se non esiste
+
+            if (!file.exists()) {
+                return null;
             }
+
+            return mapper.readValue(file, Target.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
